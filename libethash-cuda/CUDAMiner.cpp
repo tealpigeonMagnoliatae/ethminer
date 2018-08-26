@@ -474,7 +474,7 @@ void CUDAMiner::search(
 
                 buffer->count = 0;
                 uint64_t nonce_base = current_nonce - streams_batch_size;
-                
+
                 // Pass the solution(s) for submission
                 uint64_t minerNonce;
 
@@ -502,7 +502,7 @@ void CUDAMiner::search(
                                 << "GPU gave incorrect result! Lower OC if this happens frequently";
                         }
                     }
-                        
+
                 }
             }
 
