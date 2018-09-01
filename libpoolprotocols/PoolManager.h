@@ -32,6 +32,7 @@ public:
     void stop();
     bool isConnected() { return p_client->isConnected(); };
     bool isRunning() { return m_running; };
+    double getCurrentDifficulty();
 
 private:
     unsigned m_hashrateReportingTime = 60;
@@ -62,6 +63,7 @@ private:
     boost::lockfree::queue<std::chrono::steady_clock::time_point> m_submit_times;
 
     int m_lastEpoch = 0;
+    double m_lastDifficulty = 0.0;
 };
 }  // namespace eth
 }  // namespace dev

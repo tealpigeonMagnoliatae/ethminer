@@ -81,6 +81,7 @@ PoolManager::PoolManager(boost::asio::io_service& io_service, PoolClient* client
             static const uint256_t dividend(
                 "0xffff000000000000000000000000000000000000000000000000000000000000");
             const uint256_t divisor(string("0x") + m_lastBoundary.hex());
+            m_lastDifficulty = double(dividend / divisor);
             std::stringstream ss;
             ss << fixed << setprecision(2) << double(dividend / divisor) / 1000000000.0
                << "K megahash";
@@ -388,4 +389,13 @@ void PoolManager::check_failover_timeout(const boost::system::error_code& ec)
             }
         }
     }
+}
+
+double PoolManager::getCurrentDifficulty()
+{
+    if (!m_running.load(std::memory_order_relaxed))
+        return 0.0;
+    if (!p_client->isConnected())
+        return 0.0;
+    return m_lastDifficulty;
 }
