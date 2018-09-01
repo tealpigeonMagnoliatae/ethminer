@@ -95,7 +95,7 @@ PoolManager::PoolManager(boost::asio::io_service& io_service, PoolClient* client
         m_farm.setWork(wp);
     });
 
-    p_client->onSolutionAccepted([&](bool const& stale) {
+    p_client->onSolutionAccepted([&](bool const& stale, unsigned miner_index) {
         using namespace std::chrono;
         milliseconds ms(0);
         steady_clock::time_point m_submit_time;
@@ -111,10 +111,10 @@ PoolManager::PoolManager(boost::asio::io_service& io_service, PoolClient* client
            << " " << m_connections.at(m_activeConnectionIdx).Host() + p_client->ActiveEndPoint();
         cnote << EthLime "**Accepted" EthReset << (stale ? EthYellow "(stale)" EthReset : "")
               << ss.str();
-        m_farm.acceptedSolution(stale);
+        m_farm.acceptedSolution(stale, miner_index);
     });
 
-    p_client->onSolutionRejected([&](bool const& stale) {
+    p_client->onSolutionRejected([&](bool const& stale, unsigned miner_index) {
         using namespace std::chrono;
         milliseconds ms(0);
         steady_clock::time_point m_submit_time;
@@ -130,10 +130,10 @@ PoolManager::PoolManager(boost::asio::io_service& io_service, PoolClient* client
            << "   " << m_connections.at(m_activeConnectionIdx).Host() + p_client->ActiveEndPoint();
         cwarn << EthRed "**Rejected" EthReset << (stale ? EthYellow "(stale)" EthReset : "")
               << ss.str();
-        m_farm.rejectedSolution();
+        m_farm.rejectedSolution(miner_index);
     });
 
-    m_farm.onSolutionFound([&](const Solution& sol) {
+    m_farm.onSolutionFound([&](const Solution& sol, unsigned miner_index) {
         // Solution should passthrough only if client is
         // properly connected. Otherwise we'll have the bad behavior
         // to log nonce submission but receive no response
@@ -147,7 +147,7 @@ PoolManager::PoolManager(boost::asio::io_service& io_service, PoolClient* client
             else
                 cnote << "Solution: " << EthWhite "0x" << toHex(sol.nonce) << EthReset;
 
-            p_client->submitSolution(sol);
+            p_client->submitSolution(sol, miner_index);
         }
         else
         {

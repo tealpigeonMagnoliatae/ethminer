@@ -64,7 +64,7 @@ void EthGetworkClient::submitHashrate(string const& rate)
     m_currentHashrateToSubmit = rate;
 }
 
-void EthGetworkClient::submitSolution(const Solution& solution)
+void EthGetworkClient::submitSolution(const Solution& solution, unsigned miner_index)
 {
     // Immediately send found solution without wait for loop
     if (m_connected.load(std::memory_order_relaxed))
@@ -77,14 +77,14 @@ void EthGetworkClient::submitSolution(const Solution& solution)
             {
                 if (m_onSolutionAccepted)
                 {
-                    m_onSolutionAccepted(false);
+                    m_onSolutionAccepted(false, miner_index);
                 }
             }
             else
             {
                 if (m_onSolutionRejected)
                 {
-                    m_onSolutionRejected(false);
+                    m_onSolutionRejected(false, miner_index);
                 }
             }
         }

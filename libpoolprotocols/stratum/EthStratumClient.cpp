@@ -734,6 +734,9 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
         Json::Value jReq;
         Json::Value jResult = responseObject.get("result", Json::Value::null);
 
+        if (_id >= 10 && _id <= 30) /* allow up to max 20 GPUs */
+            goto respond_to_submit_solution;
+
         switch (_id)
         {
         case 1:
@@ -967,7 +970,8 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
 
             break;
 
-        case 4:
+        //case 4:
+respond_to_submit_solution:
 
             // Response to solution submission mining.submit
             // (https://en.bitcoin.it/wiki/Stratum_mining_protocol#mining.submit) Result should be
@@ -980,13 +984,14 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
             }
 
             {
+                unsigned miner_index = _id - 10;
                 m_responsetimer.cancel();
                 m_response_pending = false;
                 if (_isSuccess)
                 {
                     if (m_onSolutionAccepted)
                     {
-                        m_onSolutionAccepted(m_stale);
+                        m_onSolutionAccepted(m_stale, miner_index);
                     }
                 }
                 else
@@ -995,12 +1000,11 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
                     {
                         cwarn << "Reject reason :"
                               << (_errReason.empty() ? "Unspecified" : _errReason);
-                        m_onSolutionRejected(m_stale);
+                        m_onSolutionRejected(m_stale, miner_index);
                     }
                 }
             }
             break;
-
 
         case 5:
 
@@ -1318,7 +1322,7 @@ void EthStratumClient::submitHashrate(string const& rate)
     sendSocketData(jReq);
 }
 
-void EthStratumClient::submitSolution(const Solution& solution)
+void EthStratumClient::submitSolution(const Solution& solution, unsigned miner_index)
 {
     string nonceHex = toHex(solution.nonce);
 
@@ -1328,7 +1332,7 @@ void EthStratumClient::submitSolution(const Solution& solution)
 
     Json::Value jReq;
 
-    jReq["id"] = unsigned(4);
+    jReq["id"] = unsigned(10) + miner_index;
     jReq["method"] = "mining.submit";
     jReq["params"] = Json::Value(Json::arrayValue);
 
