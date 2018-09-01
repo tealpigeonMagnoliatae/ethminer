@@ -354,6 +354,8 @@ public:
         m_mining_paused.clear_mining_paused(pause_reason);
     }
 
+    MinigPauseReason get_mining_paused() { return m_mining_paused.get_mining_paused(); }
+
     bool is_mining_paused() { return m_mining_paused.is_mining_paused(); }
 
     float RetrieveHashRate() { return m_hashRate.load(std::memory_order_relaxed); }
